@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__unity-mcp__Unity_RunCommand",
+      "mcp__unity-mcp__Unity_GetConsoleLogs",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\emipe\\\\Kapicua!\\\\Assets\\\\_Kapicua\" -Recurse -File | Where-Object { $_.Extension -ne '.meta' } | Select-Object FullName, Length)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

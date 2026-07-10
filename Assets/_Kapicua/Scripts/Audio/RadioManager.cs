@@ -286,4 +286,94 @@ namespace Kapicua.Audio
             _playlist = new List<RadioTrack>();
 
             string radioDir      = System.IO.Path.Combine(Application.streamingAssetsPath, RadioFolder);
-       
+            string manifestPath  = System.IO.Path.Combine(radioDir, "manifest.txt");
+
+            List<string> fileNames = new List<string>();
+
+            if (System.IO.File.Exists(manifestPath))
+            {
+                // Read manifest line-by-line
+                foreach (var line in System.IO.File.ReadAllLines(manifestPath))
+                {
+                    string trimmed = line.Trim();
+                    if (!string.IsNullOrEmpty(trimmed) && trimmed != "manifest.txt")
+                        fileNames.Add(trimmed);
+                }
+                Debug.Log($"[Radio] Manifest found: {fileNames.Count} tracks.");
+            }
+            else if (System.IO.Directory.Exists(radioDir))
+            {
+                // Fallback for Editor / macOS builds
+                foreach (var ext in new[] { "*.mp3", "*.wav", "*.ogg" })
+                    foreach (var f in System.IO.Directory.GetFiles(radioDir, ext))
+                        fileNames.Add(System.IO.Path.GetFileName(f));
+                Debug.Log($"[Radio] Directory scan: {fileNames.Count} tracks.");
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[Radio] StreamingAssets/Radio/ not found.\n" +
+                    $"Run: Kapicua ▸ Copy Music to StreamingAssets");
+            }
+
+            foreach (var fileName in fileNames)
+            {
+                string title = System.IO.Path.GetFileNameWithoutExtension(fileName);
+                _playlist.Add(new RadioTrack
+                {
+                    FileName        = fileName,
+                    Title           = title,
+                    Artist          = "Kapicua Radio",
+                    DurationSeconds = 200f   // fallback estimate; accurate timing isn't needed for sync
+                });
+            }
+
+            // Shuffle the playlist on first load if no host sync data has arrived yet
+            if (_playlist.Count > 1 && _shuffleOrder == null)
+                _shuffleOrder = GenerateShuffleOrder(_playlist.Count);
+
+            await Task.CompletedTask;
+#endif
+        }
+
+        int[] GenerateShuffleOrder(int count)
+        {
+            var order = new int[count];
+            for (int i = 0; i < count; i++) order[i] = i;
+            var rng = new System.Random((int)DateTime.UtcNow.Ticks);
+            for (int i = count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (order[i], order[j]) = (order[j], order[i]);
+            }
+            return order;
+        }
+
+        // ─── VOLUME / MUTE (local only) ──────────────────────────────────────
+
+        public void SetVolume(float value)
+        {
+            _volume = value;
+            if (!_isMuted && MusicSource != null)
+                MusicSource.volume = value;
+        }
+
+        public void ToggleMute()
+        {
+            _isMuted = !_isMuted;
+            if (MusicSource != null)
+                MusicSource.volume = _isMuted ? 0 : _volume;
+            if (MuteIcon != null)
+                MuteIcon.sprite = _isMuted ? MuteOnSprite : MuteOffSprite;
+        }
+    }
+
+    [Serializable]
+    public class RadioTrack
+    {
+        public string FileName;
+        public string Title;
+        public string Artist;
+        public float DurationSeconds;
+    }
+}

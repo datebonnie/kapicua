@@ -84,4 +84,37 @@ namespace Kapicua.UI
         /// Shows the end-choice buttons for a tile that can play on either end.
         /// Button labels display the pip value they connect to.
         /// </summary>
-        pub
+        public void HighlightValidEnds(DominoTile tile)
+        {
+            if (_empty) return;
+
+            if (LeftEndButton != null && tile.Has(_leftEnd))
+            {
+                LeftEndButton.gameObject.SetActive(true);
+                var label = LeftEndButton.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.text = $"◀ {_leftEnd}";
+            }
+            if (RightEndButton != null && tile.Has(_rightEnd))
+            {
+                RightEndButton.gameObject.SetActive(true);
+                var label = RightEndButton.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.text = $"{_rightEnd} ▶";
+            }
+        }
+
+        public void HideEndButtons()
+        {
+            if (LeftEndButton  != null) LeftEndButton.gameObject.SetActive(false);
+            if (RightEndButton != null) RightEndButton.gameObject.SetActive(false);
+        }
+
+        /// <summary>Clears the chain at the start of a new round.</summary>
+        public void Clear()
+        {
+            LayoutView?.Clear();
+            _leftEnd = _rightEnd = -1;
+            _empty = true;
+            HideEndButtons();
+        }
+    }
+}

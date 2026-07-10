@@ -259,4 +259,120 @@ namespace Kapicua.Networking
                 if (tile.HasValue)
                     MatchManager.RoundManager.PlayTile(seat, tile.Value, (BoardEnd)end);
             }
-            OnTilePlayed?
+            OnTilePlayed?.Invoke(seat, tileIndex, end);
+        }
+
+        [ClientRpc]
+        void BroadcastPassClientRpc(int seat)
+        {
+            if (!IsServer) MatchManager.RoundManager.PassTurn(seat);
+            OnPlayerPassed?.Invoke(seat);
+        }
+
+        [ClientRpc]
+        void BroadcastRoundEndClientRpc(int winningTeam, int points, bool isKapicua)
+        {
+            OnRoundEnded?.Invoke(new RoundResultData
+            {
+                WinningTeam = winningTeam,
+                Points = points,
+                IsKapicua = isKapicua
+            });
+        }
+
+        [ClientRpc]
+        void BroadcastMatchEndClientRpc(int winningTeam)
+        {
+            OnMatchEnded?.Invoke(winningTeam);
+        }
+
+        [ClientRpc]
+        void BroadcastChatClientRpc(string playerName, string message)
+        {
+            OnChatMessage?.Invoke(playerName, message);
+        }
+
+        [ClientRpc]
+        void BroadcastEmojiClientRpc(string playerName, int emojiIndex)
+        {
+            OnEmoji?.Invoke(playerName, emojiIndex);
+        }
+
+        // ─── HELPERS ─────────────────────────────────────────────────────────
+
+        int GetSeatForClient(ulong clientId)
+        {
+            var clients = new List<ulong>(NetworkManager.Singleton.ConnectedClientsIds);
+            return clients.IndexOf(clientId);
+        }
+
+        DominoTile? FindTileByIndex(int index, int seat)
+        {
+            if (MatchManager.RoundManager.PlayerHands == null) return null;
+            foreach (var tile in MatchManager.RoundManager.PlayerHands[seat])
+            {
+                if (tile.TileIndex == index) return tile;
+            }
+            return null;
+        }
+
+        // ─── PUBLIC API FOR UI ───────────────────────────────────────────────
+
+        public void LocalPlayTile(int tileIndex, int end)
+        {
+            if (IsServer)
+                PlayTileServerRpc(tileIndex, end);
+            else
+                PlayTileServerRpc(tileIndex, end);
+        }
+
+        public void LocalPass()
+        {
+            PassTurnServerRpc();
+        }
+
+        public void LocalSendChat(string message) => SendChatServerRpc(message);
+        public void LocalSendEmoji(int emojiIndex) => SendEmojiServerRpc(emojiIndex);
+        public int GetLocalSeat() => _localSeat;
+
+        // ─── AI ACTIONS (host-side only; mirrors the ServerRpc bodies) ───────
+
+        public void AIPlayTile(int seat, int tileIndex, int end)
+        {
+            if (!IsServer) return;
+            var tile = FindTileByIndex(tileIndex, seat);
+            if (!tile.HasValue) return;
+
+            bool success = MatchManager.RoundManager.PlayTile(seat, tile.Value, (BoardEnd)end);
+            if (success)
+            {
+                BroadcastTilePlayedClientRpc(seat, tileIndex, end);
+                _currentTurn.Value = MatchManager.TurnManager.CurrentSeat;
+                _teamAScore.Value = MatchManager.ScoreManager.TeamAScore;
+                _teamBScore.Value = MatchManager.ScoreManager.TeamBScore;
+            }
+            else
+            {
+                // Defensive: an illegal AI choice must never stall the game.
+                Debug.LogWarning($"[AI] Seat {seat} attempted illegal move; passing.");
+                AIPass(seat);
+            }
+        }
+
+        public void AIPass(int seat)
+        {
+            if (!IsServer) return;
+            MatchManager.RoundManager.PassTurn(seat);
+            BroadcastPassClientRpc(seat);
+            _currentTurn.Value = MatchManager.TurnManager.CurrentSeat;
+        }
+    }
+
+    [Serializable]
+    public struct RoundResultData
+    {
+        public int WinningTeam;
+        public int Points;
+        public bool IsKapicua;
+    }
+}

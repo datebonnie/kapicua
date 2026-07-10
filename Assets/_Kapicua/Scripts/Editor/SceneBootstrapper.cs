@@ -229,4 +229,12 @@ namespace Kapicua.EditorTools
             return button;
         }
 
-        static void SetRect(RectTransform rt, Vector
+        static void SetRect(RectTransform rt, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPos, Vector2 sizeDelta)
+        {
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.anchoredPosition = anchoredPos;
+            rt.sizeDelta = sizeDelta;
+        }
+    }
+}

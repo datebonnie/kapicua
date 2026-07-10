@@ -144,4 +144,9 @@ namespace Kapicua.Core
             {
                 if (board.HasValidPlay(hands[seat])) return false;
             }
-          
+            return true;
+        }
+    }
+
+    public enum RoundEndReason { Domino, Tranque }
+}

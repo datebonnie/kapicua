@@ -380,4 +380,128 @@ namespace Kapicua.UI
             _btn?.onClick.AddListener(() => OnTileClicked?.Invoke(Tile));
         }
 
-        public void SetTile(DominoTile t
+        public void SetTile(DominoTile tile)
+        {
+            Tile = tile;
+            BuildFace();
+        }
+
+        /// <summary>Draws the domino face: divider bar + pip dots for both halves.</summary>
+        void BuildFace()
+        {
+            // Remove any previous face and the legacy placeholder label
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i);
+                if (child.name == "Face" || child.name == "PipText")
+                    Destroy(child.gameObject);
+            }
+
+            var face = new GameObject("Face", typeof(RectTransform));
+            face.transform.SetParent(transform, false);
+            var faceRT = (RectTransform)face.transform;
+            faceRT.anchorMin = Vector2.zero;
+            faceRT.anchorMax = Vector2.one;
+            faceRT.offsetMin = faceRT.offsetMax = Vector2.zero;
+
+            // Divider bar across the middle
+            var divider = NewPipImage(face.transform, "Divider", null);
+            var dRT = (RectTransform)divider.transform;
+            dRT.anchorMin = new Vector2(0.12f, 0.5f);
+            dRT.anchorMax = new Vector2(0.88f, 0.5f);
+            dRT.sizeDelta = new Vector2(0, 3);
+            dRT.anchoredPosition = Vector2.zero;
+
+            // Top half = SideA, bottom half = SideB (vertical domino)
+            AddPips(face.transform, Tile.SideA, 0.75f);
+            AddPips(face.transform, Tile.SideB, 0.25f);
+        }
+
+        void AddPips(Transform face, int value, float halfCenterY)
+        {
+            foreach (var p in PipPatterns[Mathf.Clamp(value, 0, 6)])
+            {
+                var pip = NewPipImage(face, $"Pip{value}", PipSprite);
+                var rt = (RectTransform)pip.transform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, halfCenterY);
+                rt.sizeDelta = new Vector2(13, 13);
+                rt.anchoredPosition = new Vector2(p.x * 19f, p.y * 16f);
+            }
+        }
+
+        static GameObject NewPipImage(Transform parent, string name, Sprite sprite)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+            var img = go.GetComponent<Image>();
+            img.sprite = sprite;
+            img.color = PipColor;
+            img.raycastTarget = false;
+            return go;
+        }
+
+        public void SetHighlight(bool on)
+        {
+            if (_bg != null)
+                _bg.color = on ? new Color(1f, 0.87f, 0.2f) : Color.white;
+        }
+
+        public void SetPlayable(bool playable)
+        {
+            if (_btn != null) _btn.interactable = playable;
+            if (_bg != null) _bg.color = playable ? Color.white : new Color(0.6f, 0.6f, 0.6f);
+        }
+    }
+
+    /// <summary>UI for a single player's zone (avatar, name, tile count, active indicator).</summary>
+    [System.Serializable]
+    public class PlayerZoneUI : MonoBehaviour
+    {
+        public TMP_Text PlayerNameText;
+        public TMP_Text TileCountText;
+        public Image AvatarImage;
+        public Image ActiveIndicator;
+        public GameObject PassIndicatorObj;
+        public Color ActiveColor = new Color(0.98f, 0.73f, 0.2f);
+        private int _tileCount = 7;
+
+        public void Setup(string name, int seat)
+        {
+            if (PlayerNameText != null) PlayerNameText.text = name;
+            _tileCount = 7;
+            UpdateTileCount();
+        }
+
+        public void DecrementTileCount()
+        {
+            _tileCount = Mathf.Max(0, _tileCount - 1);
+            UpdateTileCount();
+        }
+
+        void UpdateTileCount()
+        {
+            if (TileCountText != null) TileCountText.text = _tileCount.ToString();
+        }
+
+        public void SetActivePlayer(bool active)
+        {
+            if (ActiveIndicator != null)
+                ActiveIndicator.color = active ? ActiveColor : Color.clear;
+        }
+
+        public void ShowPassIndicator()
+        {
+            if (PassIndicatorObj != null)
+            {
+                PassIndicatorObj.SetActive(true);
+                StartCoroutine(HidePassIndicator());
+            }
+        }
+
+        IEnumerator HidePassIndicator()
+        {
+            yield return new WaitForSeconds(1.5f);
+            if (PassIndicatorObj != null) PassIndicatorObj.SetActive(false);
+        }
+    }
+}

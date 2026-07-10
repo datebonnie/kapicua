@@ -279,4 +279,39 @@ namespace Kapicua.UI
                     else
                         tcs.TrySetResult(AccessToken.CurrentAccessToken.TokenString);
                 });
-       
+            }
+
+            if (!FB.IsInitialized)
+                FB.Init(() => { FB.ActivateApp(); DoLogin(); });
+            else
+            {
+                FB.ActivateApp();
+                DoLogin();
+            }
+
+            return tcs.Task;
+#else
+            // Facebook SDK not imported / FACEBOOK_SDK define not set.
+            return Task.FromResult<string>(null);
+#endif
+        }
+
+        // ─── UI HELPERS ──────────────────────────────────────────────────────
+
+        void ShowLoading(string message)
+        {
+            if (LoadingOverlay != null) LoadingOverlay.SetActive(true);
+            if (StatusText != null) StatusText.text = message;
+        }
+
+        void HideLoading()
+        {
+            if (LoadingOverlay != null) LoadingOverlay.SetActive(false);
+        }
+
+        void SetStatus(string msg)
+        {
+            if (StatusText != null) StatusText.text = msg;
+        }
+    }
+}

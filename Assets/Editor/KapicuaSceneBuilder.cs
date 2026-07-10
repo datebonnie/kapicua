@@ -659,6 +659,8 @@ namespace Kapicua.EditorTools
             var boardRoot = Obj("BoardRoot");
             boardRoot.transform.position = Vector3.zero;
             var layoutView    = boardRoot.AddComponent<BoardLayoutView>();
+            layoutView.HalfWidth  = 5.5f;   // chain serpentines within the art's felt
+            layoutView.RowSpacing = 1.6f;
             var boardRenderer = boardRoot.AddComponent<BoardRenderer>();
             boardRenderer.LayoutView = layoutView;
 
@@ -697,67 +699,78 @@ namespace Kapicua.EditorTools
             var canvas = MakeCanvas("GameCanvas");
             canvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1080, 1920);
 
-            // Header strip
-            var header = Panel(canvas.transform, "Header",
-                V2(0,1), V2(1,1), V2(0,0), V2(0,-70),
-                new Color(0,0,0,0.72f));
-            var partidaTxt = MakeTMP(header.transform, "PartidaText", "Partida 1", 24,
-                TextAlignmentOptions.Left, V2(0,0), V2(0.33f,1), V2(14,0), V2(0,0));
-            var rondaTxt = MakeTMP(header.transform, "RondaText", "Ronda 1", 24,
-                TextAlignmentOptions.Center, V2(0.33f,0), V2(0.67f,1), V2(0,0), V2(0,0));
-            var nosTxt = MakeTMP(header.transform, "NosotrosScore", "NOS  0", 26,
-                TextAlignmentOptions.Right, V2(0.67f,0), V2(1,1), V2(-12,0), V2(0,0));
-            nosTxt.color = Gold;
-            var ellosTxt = MakeTMP(header.transform, "EllosScore", "0  ELLOS", 26,
-                TextAlignmentOptions.Left, V2(1,0), V2(1,1), V2(8,0), V2(200,0));
+            // ── Scores in the art's VS banner plates ─────────────────────
+            var nosTxt = MakeTMP(canvas.transform, "NosotrosScore", "0", 36,
+                TextAlignmentOptions.Center, V2(0.375f,0.923f), V2(0.375f,0.923f), V2(0,0), V2(190,50));
+            var ellosTxt = MakeTMP(canvas.transform, "EllosScore", "0", 36,
+                TextAlignmentOptions.Center, V2(0.68f,0.923f), V2(0.68f,0.923f), V2(0,0), V2(190,50));
 
-            // Player zones (4 zones around the board)
+            // Partida / Ronda: subtle, on the wood below the tray
+            var partidaTxt = MakeTMP(canvas.transform, "PartidaText", "Partida 1", 20,
+                TextAlignmentOptions.Center, V2(0.40f,0.032f), V2(0.40f,0.032f), V2(0,0), V2(180,30));
+            partidaTxt.color = TextMuted;
+            var rondaTxt = MakeTMP(canvas.transform, "RondaText", "Ronda 1", 20,
+                TextAlignmentOptions.Center, V2(0.60f,0.032f), V2(0.60f,0.032f), V2(0,0), V2(180,30));
+            rondaTxt.color = TextMuted;
+
+            // ── Player zones mapped onto the art's avatar slots ───────────
+            // [0]=you (beside the tray), [1]=right circle, [2]=top circle, [3]=left circle
             var zonesGO = new GameObject("PlayerZones", typeof(RectTransform));
             zonesGO.transform.SetParent(canvas.transform, false);
             SetRect(RT(zonesGO), V2(0,0), V2(1,1), V2(0,0), V2(0,0));
             var zones    = new PlayerZoneUI[4];
-            Vector2[] zonePivots = { V2(0.5f,0.05f), V2(0.95f,0.5f), V2(0.5f,0.92f), V2(0.05f,0.5f) };
-            string[] zoneNames   = { "ZoneBottom (You)", "ZoneRight", "ZoneTop (Partner)", "ZoneLeft" };
+            Vector2[] zoneAnchors = { V2(0.135f,0.345f), V2(0.898f,0.722f), V2(0.514f,0.836f), V2(0.102f,0.722f) };
+            string[] zoneNames    = { "ZoneYou", "ZoneRight", "ZoneTop (Partner)", "ZoneLeft" };
             for (int i = 0; i < 4; i++)
             {
-                var zGO = Panel(zonesGO.transform, zoneNames[i],
-                    zonePivots[i], zonePivots[i], V2(0,0), V2(280,100), new Color(0,0,0,0.6f));
+                var zGO = new GameObject(zoneNames[i], typeof(RectTransform));
+                zGO.transform.SetParent(zonesGO.transform, false);
+                SetRect(RT(zGO), zoneAnchors[i], zoneAnchors[i], V2(0,0), V2(300,290));
                 zones[i] = zGO.AddComponent<PlayerZoneUI>();
+
+                // Tile count sits inside the art's avatar circle
+                zones[i].TileCountText = MakeTMP(zGO.transform, "Tiles", "7", 56,
+                    TextAlignmentOptions.Center, V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,0), V2(130,66));
+
+                // Name sits on the art's plate under the circle
                 zones[i].PlayerNameText = MakeTMP(zGO.transform, "Name",
-                    (i == 0) ? "Tú" : (i == 2) ? "Compañero" : "Rival", 24,
-                    TextAlignmentOptions.Center, V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,16), V2(260,36));
-                zones[i].TileCountText = MakeTMP(zGO.transform, "Tiles", "7", 32,
-                    TextAlignmentOptions.Center, V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,-18), V2(80,42));
+                    (i == 0) ? "Tú" : (i == 2) ? "Compañero" : "Rival", 26,
+                    TextAlignmentOptions.Center, V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,-114), V2(280,40));
+
+                // Gold underline = active-turn indicator
                 var activeInd = Panel(zGO.transform, "ActiveIndicator",
-                    V2(0,0), V2(1,0), V2(0,0), V2(0,4), Color.clear);
+                    V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,-144), V2(175,6), Color.clear);
                 zones[i].ActiveIndicator = activeInd.GetComponent<Image>();
+
                 var passInd = new GameObject("PassIndicator", typeof(RectTransform));
                 passInd.transform.SetParent(zGO.transform, false);
-                SetRect(RT(passInd), V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,0), V2(140,44));
-                MakeTMP(passInd.transform, "PassText", "PASO", 28,
+                SetRect(RT(passInd), V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,70), V2(170,48));
+                MakeTMP(passInd.transform, "PassText", "¡PASO!", 30,
                     TextAlignmentOptions.Center, V2(0,0), V2(1,1), V2(0,0), V2(0,0))
                     .color = new Color(1f, 0.38f, 0.38f);
                 passInd.SetActive(false);
                 zones[i].PassIndicatorObj = passInd;
             }
+            // Your own count is your hand — hide it; keep just the name near the tray
+            zones[0].TileCountText.gameObject.SetActive(false);
 
-            // TU TURNO panel
+            // TU TURNO panel — floats above the tray
             var tuTurnoPanel = Panel(canvas.transform, "TuTurnoPanel",
-                V2(0.5f,0.15f), V2(0.5f,0.15f), V2(0,0), V2(340,72), Gold);
+                V2(0.5f,0.365f), V2(0.5f,0.365f), V2(0,0), V2(340,66), Gold);
             tuTurnoPanel.SetActive(false);
-            var tuTurnoTxt = MakeTMP(tuTurnoPanel.transform, "TuTurnoText", "¡TU TURNO!", 36,
+            var tuTurnoTxt = MakeTMP(tuTurnoPanel.transform, "TuTurnoText", "¡TU TURNO!", 34,
                 TextAlignmentOptions.Center, V2(0,0), V2(1,1), V2(0,0), V2(0,0));
             tuTurnoTxt.color = Color.black;
 
-            // Pass button
-            var passBtn = Btn(canvas.transform, "PassButton", "PASO", 32,
-                V2(0.82f,0.15f), V2(0.82f,0.15f), V2(0,0), V2(170,68), BtnRed);
+            // Pass button — right of the tray
+            var passBtn = Btn(canvas.transform, "PassButton", "PASO", 30,
+                V2(0.885f,0.29f), V2(0.885f,0.29f), V2(0,0), V2(150,62), BtnRed);
             passBtn.gameObject.SetActive(false);
 
-            // Your hand container (bottom strip)
+            // Your hand — inside the art's wooden tray
             var handGO = new GameObject("HandContainer", typeof(RectTransform));
             handGO.transform.SetParent(canvas.transform, false);
-            SetRect(RT(handGO), V2(0,0), V2(1,0), V2(0,8), V2(0,140));
+            SetRect(RT(handGO), V2(0.215f,0.255f), V2(0.79f,0.325f), V2(0,0), V2(0,0));
             var hLayout = handGO.AddComponent<HorizontalLayoutGroup>();
             hLayout.childAlignment = TextAnchor.MiddleCenter;
             hLayout.spacing = 6;
@@ -892,26 +905,23 @@ namespace Kapicua.EditorTools
                 felt.SetFloat("_Smoothness", 0.15f);
                 AssetDatabase.CreateAsset(felt, $"{MaterialsDir}/TableFelt.mat");
             }
-            var table = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            table.name = "Table";
-            table.transform.position  = new Vector3(0, -0.25f, 0);
-            table.transform.localScale = new Vector3(22f, 0.5f, 13.5f);
-            table.GetComponent<MeshRenderer>().sharedMaterial = felt;
+            // NOTE: the painted backdrop IS the table now — no 3-D table geometry.
+            // (felt material kept above for potential future use)
 
-            // Directional sun
+            // Directional sun — shades the 3-D domino tiles
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type      = LightType.Directional;
-            sun.transform.rotation = Quaternion.Euler(55, -35, 0);
+            sun.transform.rotation = Quaternion.Euler(60, -25, 0);
             sun.intensity = 1.15f;
             sun.color     = new Color(1f, 0.96f, 0.9f);
             sun.shadows   = LightShadows.Soft;
 
-            // Overhead camera
+            // Straight-down camera: the tile chain lands on the art's felt region
             var camGO = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam   = camGO.AddComponent<Camera>();
             camGO.AddComponent<AudioListener>();
-            camGO.transform.position = new Vector3(0, 14f, -8.5f);
-            camGO.transform.rotation = Quaternion.Euler(58, 0, 0);
+            camGO.transform.position = new Vector3(0, 28f, 0);
+            camGO.transform.rotation = Quaternion.Euler(90, 0, 0);
             cam.fieldOfView    = 50;
             cam.clearFlags     = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.07f, 0.09f, 0.11f);

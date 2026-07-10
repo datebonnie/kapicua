@@ -163,4 +163,13 @@ namespace Kapicua.Core
         {
             RoundActive = false;
             var result = GameRules.EvaluateRound(
-                PlayerHands, Board, reason, win
+                PlayerHands, Board, reason, winningSeat, TurnManager.RoundLeadSeat);
+
+            ScoreManager.RecordRound(result, RoundNumber);
+            OnRoundEnded?.Invoke(result);
+
+            if (ScoreManager.IsMatchOver())
+                OnMatchEnded?.Invoke();
+        }
+    }
+}

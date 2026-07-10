@@ -95,7 +95,7 @@ namespace Kapicua.Core
         /// - Neither matched end is a blank (0)
         /// - The tile itself is not a double
         ///
-        /// Kapicua gives the winning team +25 bonus points.
+        /// Kapicua gives the winning team +30 bonus points (GameRules.KAPICUA_BONUS).
         /// </summary>
         public bool IsKapicua(DominoTile lastTile)
         {

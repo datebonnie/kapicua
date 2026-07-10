@@ -94,7 +94,7 @@ namespace Kapicua.Game
                 return "Tranca empatada\nNadie anota";
 
             string who = r.WinningTeam == 0 ? "¡Ronda para NOSOTROS!" : "Ronda para ellos";
-            string how = r.Blocked ? "Tranca" : (r.Capicua ? "¡¡CAPICÚA!! puntos x2" : $"Dominó de {PlayerNames[r.WinningPlayer]}");
+            string how = r.Blocked ? "Tranca" : (r.Capicua ? "¡¡CAPICÚA!! +30" : $"Dominó de {PlayerNames[r.WinningPlayer]}");
             return $"{who}\n{how}: +{r.Points} puntos";
         }
 

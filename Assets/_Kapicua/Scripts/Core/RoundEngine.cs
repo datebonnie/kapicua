@@ -143,7 +143,7 @@ namespace Kapicua.Core
             for (int p = 0; p < PlayerCount; p++)
                 if (TeamOf(p) != winningTeam)
                     points += Hands[p].Sum(t => t.PipSum);
-            if (capicua) points *= 2;
+            if (capicua) points += GameRules.KAPICUA_BONUS;   // flat +30 house rule
 
             Result = new RoundResult
             {

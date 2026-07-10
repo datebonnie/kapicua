@@ -10,11 +10,11 @@ namespace Kapicua.Core
     /// ─────────────────────────────────────────────────────────────────────
     /// 1. DOMINO (winner plays last tile)
     ///    Winning team scores = sum of opponent team's remaining pip values.
-    ///    + KAPICUA BONUS: +25 if last tile matches both open ends (no blanks, no doubles).
+    ///    + KAPICUA BONUS: +30 if last tile matches both open ends (no blanks, no doubles).
     ///
     /// 2. PASE CORRIDO (3 consecutive passes without anyone playing)
-    ///    Team that last played earns +25 points.
-    ///    Consecutive pases are unlimited; each run of 3 passes = +25.
+    ///    Team that last played earns +30 points.
+    ///    Consecutive pases are unlimited; each run of 3 passes = +30.
     ///
     /// 3. TRANQUE (lock — no player can ever play again)
     ///    The player who initiated the tranque (played the locking tile) compares
@@ -34,8 +34,8 @@ namespace Kapicua.Core
     public static class GameRules
     {
         public const int SCORE_TO_WIN = 200;
-        public const int KAPICUA_BONUS = 25;
-        public const int PASE_CORRIDO_BONUS = 25;
+        public const int KAPICUA_BONUS = 30;
+        public const int PASE_CORRIDO_BONUS = 30;
         public const int CONSECUTIVE_PASSES_FOR_BONUS = 3; // all 3 other players pass in a row
 
         /// <summary>

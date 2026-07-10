@@ -164,7 +164,7 @@ namespace Kapicua.UI
                 texts[0].text = $"Ronda {record.RoundNumber}";
                 texts[1].text = record.WinningTeam == 0 ? "NOSOTROS" : "ELLOS";
                 texts[2].text = $"+{record.PointsScored}";
-                texts[3].text = record.IsKapicua ? "¡KAPICUA! +25" : "";
+                texts[3].text = record.IsKapicua ? $"¡KAPICUA! +{GameRules.KAPICUA_BONUS}" : "";
             }
         }
 

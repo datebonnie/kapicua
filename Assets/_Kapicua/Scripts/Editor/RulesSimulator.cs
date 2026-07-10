@@ -97,7 +97,7 @@ namespace Kapicua.EditorTools
                     for (int p = 0; p < RoundEngine.PlayerCount; p++)
                         if (RoundEngine.TeamOf(p) != r.WinningTeam)
                             expected += round.Hands[p].Sum(t => t.PipSum);
-                    if (r.Capicua) expected *= 2;
+                    if (r.Capicua) expected += GameRules.KAPICUA_BONUS;   // flat +30 house rule
                     if (r.Points != expected)
                         throw new Exception($"Score mismatch: got {r.Points}, expected {expected}");
                 }

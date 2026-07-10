@@ -11,7 +11,7 @@ namespace Kapicua.Core
     /// - Play goes clockwise: 0 → 1 → 2 → 3 → 0
     /// - If you have no valid play, you PASS (knock on table / tap in app)
     /// - PASE CORRIDO: If all 3 other players pass in succession (without anyone playing),
-    ///   the team that last successfully played earns +25 points, then a new "corrida" begins
+    ///   the team that last successfully played earns +30 points, then a new "corrida" begins
     /// </summary>
     public class TurnManager : MonoBehaviour
     {

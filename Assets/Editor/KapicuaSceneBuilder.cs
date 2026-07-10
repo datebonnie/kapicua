@@ -781,7 +781,7 @@ namespace Kapicua.EditorTools
             var roundEnd = Panel(canvas.transform, "RoundEndPanel",
                 V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,0), V2(720,320), new Color(0,0,0,0.92f));
             roundEnd.SetActive(false);
-            var roundResult = MakeTMP(roundEnd.transform, "RoundResultText", "NOSOTROS +25", 56,
+            var roundResult = MakeTMP(roundEnd.transform, "RoundResultText", "NOSOTROS +30", 56,
                 TextAlignmentOptions.Center, V2(0.5f,0.5f), V2(0.5f,0.5f), V2(0,50), V2(640,76));
             roundResult.color = Gold;
             var kapicuaBanner = MakeTMP(roundEnd.transform, "KapicuaBanner", "¡KAPICUA!", 40,

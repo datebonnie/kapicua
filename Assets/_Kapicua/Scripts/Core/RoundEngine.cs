@@ -21,6 +21,16 @@ namespace Kapicua.Core
         public int Points;
         public bool Capicua;
         public bool Blocked;
+
+        // ── Compatibility aliases (GameRules/ScoreManager call sites) ──
+        public RoundEndReason Reason
+        {
+            get => Blocked ? RoundEndReason.Tranque : RoundEndReason.Domino;
+            set => Blocked = value == RoundEndReason.Tranque;
+        }
+        public int WinningSeat { get => WinningPlayer; set => WinningPlayer = value; }
+        public int PointsScored { get => Points; set => Points = value; }
+        public bool IsKapicua { get => Capicua; set => Capicua = value; }
     }
 
     /// <summary>
@@ -118,6 +128,7 @@ namespace Kapicua.Core
             Board.Place(move.Tile, move.End);
             Hands[player].Remove(move.Tile);
             ConsecutivePasses = 0;
+            _lastPlayer = player;
 
             if (Hands[player].Count == 0)
                 FinishDomino(player, capicua);
@@ -146,36 +157,30 @@ namespace Kapicua.Core
 
         void FinishBlocked()
         {
-            int team0 = 0, team1 = 0;
-            for (int p = 0; p < PlayerCount; p++)
-            {
-                int pips = Hands[p].Sum(t => t.PipSum);
-                if (TeamOf(p) == 0) team0 += pips; else team1 += pips;
-            }
+            // House rule: the tranque initiator (last player to place a tile)
+            // duels the player to their RIGHT — lower hand total wins for their
+            // team. Ties go to the initiator (they closed the game).
+            int initiator = _lastPlayer >= 0 ? _lastPlayer : 0;
+            int rival = (initiator + 1) % PlayerCount;
+            int initiatorPips = Hands[initiator].Sum(t => t.PipSum);
+            int rivalPips     = Hands[rival].Sum(t => t.PipSum);
+            int winner        = rivalPips < initiatorPips ? rival : initiator;
 
-            if (team0 == team1)
-            {
-                Result = new RoundResult { WinningTeam = -1, WinningPlayer = -1, Points = 0, Blocked = true };
-                return;
-            }
-
-            int winningTeam = team0 < team1 ? 0 : 1;
-            int lowestHand = int.MaxValue, winningPlayer = -1;
+            int totalPips = 0;
             for (int p = 0; p < PlayerCount; p++)
-            {
-                if (TeamOf(p) != winningTeam) continue;
-                int pips = Hands[p].Sum(t => t.PipSum);
-                if (pips < lowestHand) { lowestHand = pips; winningPlayer = p; }
-            }
+                totalPips += Hands[p].Sum(t => t.PipSum);
 
             Result = new RoundResult
             {
-                WinningTeam = winningTeam,
-                WinningPlayer = winningPlayer,
-                Points = winningTeam == 0 ? team1 : team0,
+                WinningTeam = TeamOf(winner),
+                WinningPlayer = winner,
+                Points = totalPips,
+                Capicua = false,
                 Blocked = true,
             };
         }
+
+        int _lastPlayer = -1;
 
         void AdvanceTurn() => CurrentPlayer = (CurrentPlayer + 1) % PlayerCount;
 

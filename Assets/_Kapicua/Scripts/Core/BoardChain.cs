@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Kapicua.Core
 {
-    public enum BoardEnd { Left, Right }
+    public enum BoardEnd { Left, Right, Both }
 
     /// <summary>A tile as placed on the chain, ordered left-to-right.</summary>
     public readonly struct PlacedTile

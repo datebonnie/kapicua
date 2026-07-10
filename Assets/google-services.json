@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "450394184613",
+    "project_id": "kapicua-5b41e",
+    "storage_bucket": "kapicua-5b41e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450394184613:android:41442dfb684c78ee86264c",
+        "android_client_info": {
+          "package_name": "com.moregames.kapicua"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqwTkQ6-VTdBVDVVn-DTPZDAXwmC1dq-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

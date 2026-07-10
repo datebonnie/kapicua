@@ -18,16 +18,18 @@ namespace Kapicua.EditorTools
     /// </summary>
     public static class SceneBootstrapper
     {
-        const string ScenePath = "Assets/_Kapicua/Scenes/02_Game.unity";
+        const string ScenePath = "Assets/Scenes/03_Game.unity";
         const string BootScenePath = "Assets/_Kapicua/Scenes/00_Boot.unity";
-        const string AppScenePath = "Assets/_Kapicua/Scenes/01_App.unity";
+        const string LoginScenePath = "Assets/Scenes/01_Login.unity";
+        const string MainMenuScenePath = "Assets/Scenes/02_MainMenu.unity";
         const string MaterialsDir = "Assets/_Kapicua/Materials";
 
         [MenuItem("Kapicua/Build Game Scene")]
         public static void Build()
         {
             // Open the existing game scene and wipe its contents so it keeps its GUID
-            // (01_App loads it by name) while we repopulate it.
+            // (02_MainMenu starts it) while we repopulate it with single-player AI mode.
+            // For the multiplayer build, use: Kapicua > Build All Scenes instead.
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             foreach (var root in scene.GetRootGameObjects())
                 Object.DestroyImmediate(root);
@@ -59,16 +61,17 @@ namespace Kapicua.EditorTools
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
-            // Keep the boot flow intact: 00_Boot -> 01_App -> 02_Game.
+            // Sync build settings: 00_Boot → 01_Login → 02_MainMenu → 03_Game.
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(BootScenePath, true),
-                new EditorBuildSettingsScene(AppScenePath, true),
+                new EditorBuildSettingsScene(LoginScenePath, true),
+                new EditorBuildSettingsScene(MainMenuScenePath, true),
                 new EditorBuildSettingsScene(ScenePath, true),
             };
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
 
-            Debug.Log($"Kapicua game scene built and saved to {ScenePath}");
+            Debug.Log($"[Kapicua] Single-player game scene built: {ScenePath}");
         }
 
         static void BuildTable()
@@ -226,12 +229,4 @@ namespace Kapicua.EditorTools
             return button;
         }
 
-        static void SetRect(RectTransform rt, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPos, Vector2 sizeDelta)
-        {
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.anchoredPosition = anchoredPos;
-            rt.sizeDelta = sizeDelta;
-        }
-    }
-}
+        static void SetRect(RectTransform rt, Vector

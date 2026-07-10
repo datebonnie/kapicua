@@ -99,3 +99,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Project-specific
+finaldraft1332Win.zip
+*.zip.tmp
+.claude-scratch/
